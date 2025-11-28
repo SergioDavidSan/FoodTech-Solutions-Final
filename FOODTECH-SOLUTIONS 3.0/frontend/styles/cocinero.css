@@ -1,0 +1,567 @@
+.pedidos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 2rem;
+}
+
+.pedido-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    border-left: 5px solid #667eea;
+}
+
+.pedido-card.pendiente {
+    border-left-color: #e74c3c;
+}
+
+.pedido-card.preparacion {
+    border-left-color: #f39c12;
+}
+
+.pedido-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.estado-badge {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+
+.estado-badge.pendiente {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.estado-badge.preparacion {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.pedido-info {
+    margin-bottom: 1rem;
+}
+
+.pedido-info p {
+    margin: 0.25rem 0;
+    color: #7f8c8d;
+}
+
+.pedido-items {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem;
+    background: #f8f9fa;
+    border-radius: 6px;
+}
+
+.btn-preparar {
+    background: #27ae60;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.btn-terminar {
+    background: #3498db;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.tiempo-preparacion {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.stats-card, .ingredientes-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.stat-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.stat-number {
+    font-weight: bold;
+    color: #667eea;
+}
+
+.ingredientes-list {
+    list-style: none;
+}
+
+.ingredientes-list li {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #e0e0e0;
+    color: #e74c3c;
+    font-weight: 500;
+}
+/* --- Estilos para el botón del Header --- */
+.header-icon-btn {
+    background: none;
+    border: none;
+    color: inherit; /* Hereda el color del texto del header */
+    font-size: 1.2rem; /* Tamaño similar a los otros iconos */
+    cursor: pointer;
+    padding: 5px 10px;
+    transition: transform 0.2s, color 0.2s;
+    display: flex;
+    align-items: center;
+}
+
+.header-icon-btn:hover {
+    color: #ff6b6b; /* Un color rojizo al pasar el mouse (opcional) */
+    transform: scale(1.1); /* Crece un poquito */
+}
+
+.header-icons {
+    display: flex;
+    align-items: center;
+    gap: 15px; /* Espacio entre la campana y el logout */
+}
+
+.header-icons i {
+    cursor: pointer; /* Para que la campana también parezca clicable */
+}
+/* Reset básico */
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+
+body {
+    background-color: #1a1a1d; /* Fondo oscuro para descansar la vista */
+    color: #ffffff;
+}
+
+/* --- HEADER (Estilo unificado) --- */
+.main-header {
+    background-color: #2d2d30;
+    padding: 15px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+}
+
+.logo { font-size: 1.5rem; font-weight: bold; color: #ff6b6b; }
+.logo span { color: #fff; }
+
+.header-right { display: flex; align-items: center; gap: 20px; }
+.user-info { text-align: right; }
+.user-role { display: block; font-size: 0.8rem; color: #aaa; }
+.user-name { font-weight: bold; }
+
+/* Botón Logout */
+.header-icon-btn {
+    background: none; border: none; color: #fff; font-size: 1.2rem; cursor: pointer;
+    transition: color 0.3s;
+}
+.header-icon-btn:hover { color: #ff6b6b; }
+
+/* --- CONTROLES SUPERIORES --- */
+.kitchen-controls {
+    padding: 20px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.filter-btn {
+    background: #3e3e42;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 20px;
+    cursor: pointer;
+    margin-right: 10px;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+.filter-btn.active, .filter-btn:hover {
+    background: #ff6b6b;
+    transform: scale(1.05);
+}
+
+.kitchen-stats span {
+    margin-left: 20px;
+    font-size: 1.1rem;
+}
+.kitchen-stats b { color: #ff6b6b; }
+
+/* --- GRID DE TICKETS --- */
+.pedidos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    padding: 0 30px 30px;
+}
+
+/* --- TARJETA DE PEDIDO (TICKET) --- */
+.ticket {
+    background: #fff;
+    color: #333;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    display: flex;
+    flex-direction: column;
+    border-top: 5px solid #ccc; /* Color por defecto */
+    animation: fadeIn 0.5s ease;
+}
+
+.ticket.pendiente { border-top-color: #ffc107; } /* Amarillo */
+.ticket.preparacion { border-top-color: #2196f3; } /* Azul */
+.ticket.listo { border-top-color: #4caf50; } /* Verde */
+
+.ticket-header {
+    background: #f8f9fa;
+    padding: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #eee;
+}
+
+.ticket-header .mesa { font-size: 1.4rem; font-weight: bold; color: #333; }
+.ticket-header .timer { font-family: monospace; font-size: 1.1rem; color: #666; }
+
+.ticket-items {
+    list-style: none;
+    padding: 15px;
+    flex-grow: 1;
+}
+
+.ticket-items li {
+    padding: 8px 0;
+    border-bottom: 1px dashed #eee;
+    font-size: 1.1rem;
+}
+
+.ticket-items li .qty { font-weight: bold; color: #ff6b6b; margin-right: 5px; }
+.ticket-items li .note { display: block; font-size: 0.85rem; color: #888; font-style: italic; margin-top: 2px; }
+
+.ticket-actions {
+    padding: 15px;
+    background: #f8f9fa;
+}
+
+.btn-action {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 5px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn-action.start { background: #2196f3; color: white; }
+.btn-action.start:hover { background: #1976d2; }
+
+.btn-action.finish { background: #4caf50; color: white; }
+.btn-action.finish:hover { background: #388e3c; }
+
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Reset básico */
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+
+body {
+    background-color: #f4f6f9; /* Fondo gris muy claro (como Admin) */
+    color: #333;
+}
+
+/* --- HEADER --- */
+.main-header {
+    background-color: #fff;
+    padding: 15px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.logo { font-size: 1.5rem; font-weight: bold; color: #333; }
+.logo span { color: #ff6b6b; }
+
+.header-right { display: flex; align-items: center; gap: 20px; }
+.user-info { text-align: right; }
+.user-role { display: block; font-size: 0.8rem; color: #666; }
+.user-name { font-weight: bold; }
+
+.header-icon-btn {
+    background: none; border: none; color: #555; font-size: 1.2rem; cursor: pointer;
+    transition: color 0.3s;
+}
+.header-icon-btn:hover { color: #ff6b6b; }
+
+/* --- LAYOUT PRINCIPAL --- */
+.main-container {
+    display: flex;
+    padding: 20px;
+    gap: 20px;
+    height: calc(100vh - 70px); /* Altura total menos header */
+    overflow: hidden;
+}
+
+.orders-column {
+    flex: 2; /* Ocupa 2/3 del espacio */
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto; /* Scroll solo en esta columna */
+    padding-right: 10px;
+}
+
+.menu-column {
+    flex: 1; /* Ocupa 1/3 del espacio */
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    min-width: 300px;
+}
+
+/* --- CONTROLES Y FILTROS --- */
+.kitchen-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.filter-btn {
+    background: #fff;
+    color: #555;
+    border: 1px solid #ddd;
+    padding: 8px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    margin-right: 10px;
+    font-weight: 600;
+    transition: 0.3s;
+}
+
+.filter-btn.active, .filter-btn:hover {
+    background: #ff6b6b;
+    color: white;
+    border-color: #ff6b6b;
+}
+
+.kitchen-stats span { margin-left: 15px; font-size: 0.9rem; color: #666; }
+.kitchen-stats b { color: #ff6b6b; }
+
+/* --- GRID DE PEDIDOS --- */
+.pedidos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+    padding-bottom: 20px;
+}
+
+/* --- TARJETA DE PEDIDO --- */
+.ticket {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    border: 1px solid #e0e0e0;
+    display: flex;
+    flex-direction: column;
+    border-top: 4px solid #ccc;
+    transition: transform 0.2s;
+}
+.ticket:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+
+.ticket.pendiente { border-top-color: #ffc107; }
+.ticket.preparacion { border-top-color: #2196f3; }
+
+.ticket-header {
+    padding: 12px 15px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.ticket-header h3 { font-size: 1.1rem; margin: 0; }
+.estado-badge { font-size: 0.75rem; padding: 3px 8px; border-radius: 10px; background: #eee; }
+.estado-badge.pendiente { background: #fff3cd; color: #856404; }
+.estado-badge.preparacion { background: #cce5ff; color: #004085; }
+
+.pedido-info { padding: 10px 15px; font-size: 0.85rem; color: #666; border-bottom: 1px dashed #eee; }
+
+.pedido-items { padding: 15px; flex-grow: 1; }
+.item { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 0.95rem; }
+.item span { font-weight: 500; }
+
+.btn-preparar, .btn-terminar {
+    padding: 5px 10px; border: none; border-radius: 4px; font-size: 0.8rem; cursor: pointer;
+    color: white; font-weight: bold;
+}
+.btn-preparar { background: #ffc107; color: #333; }
+.btn-terminar { background: #28a745; }
+
+/* --- COLUMNA DERECHA: DETALLES Y MENU --- */
+.details-card, .menu-list-card {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    border: 1px solid #e0e0e0;
+    padding: 20px;
+}
+
+.details-card { flex: 1; display: flex; flex-direction: column; }
+.details-placeholder { text-align: center; color: #999; padding: 40px 0; }
+.details-placeholder i { font-size: 3rem; margin-bottom: 10px; display: block; }
+
+.details-content { text-align: center; }
+.plato-img { width: 100%; height: 150px; object-fit: cover; border-radius: 8px; margin-bottom: 15px; }
+.details-content h3 { margin-bottom: 10px; color: #333; }
+.details-content h4 { font-size: 0.9rem; color: #666; margin-bottom: 5px; text-align: left; }
+.details-content ul { list-style: disc; padding-left: 20px; text-align: left; font-size: 0.9rem; color: #555; }
+
+.menu-list-card { flex: 2; display: flex; flex-direction: column; overflow: hidden; }
+.menu-list-card h3 { font-size: 1.1rem; margin-bottom: 15px; }
+
+.menu-search {
+    position: relative; margin-bottom: 15px;
+}
+.menu-search input {
+    width: 100%; padding: 8px 30px 8px 10px; border: 1px solid #ddd; border-radius: 4px;
+}
+.menu-search i { position: absolute; right: 10px; top: 9px; color: #999; }
+
+.menu-items-list {
+    list-style: none; overflow-y: auto; flex-grow: 1;
+}
+.menu-item {
+    padding: 10px; border-bottom: 1px solid #eee; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: background 0.2s;
+}
+.menu-item:hover { background: #f9f9f9; }
+.menu-item span { font-size: 0.9rem; }
+.menu-item i { font-size: 0.8rem; color: #ccc; }
+.production-summary {
+    background: white;
+    padding: 15px;
+    margin: 0 30px 20px; /* Alineado con el grid */
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    border-left: 5px solid #ff6b6b; /* Detalle de color */
+}
+
+.production-summary h3 {
+    margin-bottom: 10px;
+    font-size: 1rem;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.summary-items {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.summary-tag {
+    background: #f0f0f0;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    color: #333;
+    font-weight: 500;
+}
+
+.summary-tag b {
+    color: #ff6b6b;
+    margin-left: 5px;
+    font-size: 1rem;
+}
+/* --- SEMÁFORO DE TIEMPO (Bordes de Colores) --- */
+.ticket.tiempo-verde { border-left: 5px solid #4caf50; }
+.ticket.tiempo-amarillo { border-left: 5px solid #ffc107; }
+
+/* Rojo palpitante para pedidos retrasados (>15 min) */
+.ticket.tiempo-rojo { 
+    border-left: 5px solid #f44336; 
+    animation: pulsoRojo 2s infinite; 
+}
+
+@keyframes pulsoRojo {
+    0% { box-shadow: 0 0 0 0 rgba(244, 67, 54, 0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(244, 67, 54, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(244, 67, 54, 0); }
+}
+
+/* --- ALERTAS DE ALÉRGENOS --- */
+.alerta-alergia {
+    background-color: #ffebee;
+    color: #c62828;
+    padding: 5px;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 0.85rem;
+    margin-top: 5px;
+    border: 1px solid #ef9a9a;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.nota-normal {
+    font-size: 0.85rem;
+    color: #666;
+    font-style: italic;
+    margin-top: 2px;
+}
+
+/* --- BOTÓN TERMINAR CON ICONO --- */
+.btn-action.finish {
+    background: #28a745; 
+    color: white;
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    gap: 8px; /* Espacio entre texto e icono */
+}
+
+/* Mensaje de error/vacío centrado */
+.no-pedidos, .error-msg {
+    grid-column: 1 / -1; /* Ocupa todo el ancho del grid */
+    text-align: center;
+    padding: 40px;
+    color: #888;
+    font-size: 1.1rem;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}

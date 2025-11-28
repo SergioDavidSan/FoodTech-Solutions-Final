@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administrador - FoodTech Solutions</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="../styles/admin.css">
+</head>
+<body>
+    <header class="main-header">
+        <div class="user-info">👤 <span id="userName">Administrador</span></div>
+        <div class="header-icons">
+            <i class="fa-solid fa-bell" id="notificationsBtn"></i>
+            <i class="fa-solid fa-gear" id="settingsBtn"></i>
+            <i class="fa-solid fa-right-from-bracket" id="logoutBtn"></i>
+        </div>
+    </header>
+
+    <div class="app-container">
+        <main class="main-content">
+            <h1>👨‍💼 Panel de Administración</h1>
+
+            <div class="search-bar">
+                <span>🔍</span>
+                <input type="search" placeholder="Buscar en el sistema..." id="globalSearch">
+            </div>
+
+            <!-- Métricas Rápidas -->
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <h3>Usuarios Activos</h3>
+                    <span class="metric-value" id="usersCount">0</span>
+                    <span class="metric-trend">Hoy</span>
+                </div>
+                <div class="metric-card">
+                    <h3>Ventas Hoy</h3>
+                    <span class="metric-value" id="salesToday">$0</span>
+                    <span class="metric-trend">+0%</span>
+                </div>
+                <div class="metric-card">
+                    <h3>Pedidos Activos</h3>
+                    <span class="metric-value" id="activeOrders">0</span>
+                    <span class="metric-trend">En proceso</span>
+                </div>
+                <div class="metric-card">
+                    <h3>Mesas Ocupadas</h3>
+                    <span class="metric-value" id="occupiedTables">0/0</span>
+                    <span class="metric-trend">Disponibilidad</span>
+                </div>
+            </div>
+
+            <!-- Menú de Administración -->
+            <div class="accordion-menu">
+                <details class="accordion-item" open>
+                    <summary>👥 Gestión de Personal</summary>
+                    <div class="accordion-content">
+                        <p>Gestión completa de usuarios, roles y permisos del sistema.</p>
+                        <div class="action-buttons">
+                            <button class="btn-primary" onclick="window.location.href='usuarios.html'">
+                                <i class="fa-solid fa-users"></i> Gestionar Usuarios
+                            </button>
+                            <button class="btn-secondary" id="viewUserLogs">
+                                <i class="fa-solid fa-clipboard-list"></i> Ver Logs de Acceso
+                            </button>
+                        </div>
+                    </div>
+                </details>
+
+                <details class="accordion-item">
+                    <summary>📦 Control de Inventario</summary>
+                    <div class="accordion-content">
+                        <p>Gestión de productos, categorías y control de stock.</p>
+                        <div class="action-buttons">
+                            <button class="btn-primary" onclick="window.location.href='inventory.html'">
+                                <i class="fa-solid-boxes-stacked"></i> Ver Inventario
+                            </button>
+                            <button class="btn-secondary" id="lowStockAlert">
+                                <i class="fa-solid fa-exclamation-triangle"></i> Alertas de Stock
+                            </button>
+                        </div>
+                    </div>
+                </details>
+
+                <details class="accordion-item">
+                    <summary>💰 Facturación y Ventas</summary>
+                    <div class="accordion-content">
+                        <p>Reportes financieros y gestión de ventas.</p>
+                        <div class="action-buttons">
+                            <button class="btn-primary" onclick="window.location.href='reportes.html'">
+                                <i class="fa-solid fa-chart-line"></i> Ver Reportes
+                            </button>
+                            <button class="btn-secondary" id="viewTodaySales">
+                                <i class="fa-solid fa-receipt"></i> Ventas de Hoy
+                            </button>
+                        </div>
+                    </div>
+                </details>
+
+                <details class="accordion-item">
+                    <summary>📊 Estadísticas y Reportes</summary>
+                    <div class="accordion-content">
+                        <p>Métricas avanzadas y análisis del negocio.</p>
+                        <div class="action-buttons">
+                            <button class="btn-primary" id="generateReports">
+                                <i class="fa-solid fa-file-export"></i> Generar Reportes
+                            </button>
+                            <button class="btn-secondary" id="viewBusinessMetrics">
+                                <i class="fa-solid fa-chart-pie"></i> Métricas del Negocio
+                            </button>
+                        </div>
+                    </div>
+                </details>
+
+                <details class="accordion-item">
+                    <summary>⚙️ Configuración General</summary>
+                    <div class="accordion-content">
+                        <p>Configuración del sistema y parámetros generales.</p>
+                        <div class="action-buttons">
+                            <button class="btn-primary" id="systemSettings">
+                                <i class="fa-solid fa-sliders"></i> Configuración Sistema
+                            </button>
+                            <button class="btn-secondary" id="backupSystem">
+                                <i class="fa-solid fa-database"></i> Backup del Sistema
+                            </button>
+                        </div>
+                    </div>
+                </details>
+            </div>
+        </main>
+
+        <aside class="sidebar">
+            <!-- Acciones Rápidas -->
+            <div class="quick-actions-card">
+                <h4>🚀 Acciones Rápidas</h4>
+                <p>Gestiona las áreas clave del sistema.</p>
+                <ul class="actions-list">
+                    <li>
+                        <a href="usuarios.html" class="action-item">
+                            <div class="action-item-icon"><i class="fa-solid fa-user-plus"></i></div>
+                            <div class="action-item-text">
+                                <h4>Nuevo Usuario</h4>
+                                <p>Crear nuevo usuario del sistema</p>
+                            </div>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="inventory.html" class="action-item">
+                            <div class="action-item-icon"><i class="fa-solid fa-box"></i></div>
+                            <div class="action-item-text">
+                                <h4>Agregar Producto</h4>
+                                <p>Añadir nuevo producto al menú</p>
+                            </div>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="reportes.html" class="action-item">
+                            <div class="action-item-icon"><i class="fa-solid fa-chart-bar"></i></div>
+                            <div class="action-item-text">
+                                <h4>Reporte Diario</h4>
+                                <p>Generar reporte de ventas del día</p>
+                            </div>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Alertas del Sistema -->
+            <div class="alerts-card">
+                <h4>⚠️ Alertas del Sistema</h4>
+                <div class="alerts-list" id="systemAlerts">
+                    <div class="alert-item warning">
+                        <i class="fa-solid fa-exclamation-triangle"></i>
+                        <span>Revisar productos con stock bajo</span>
+                    </div>
+                    <div class="alert-item info">
+                        <i class="fa-solid fa-info-circle"></i>
+                        <span>Backup programado para hoy</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Información del Sistema -->
+            <div class="system-info-card">
+                <h4>🖥️ Estado del Sistema</h4>
+                <div class="system-stats">
+                    <div class="stat-item">
+                        <span>Base de Datos:</span>
+                        <span class="status connected" id="dbStatus">Conectada</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>Usuarios Conectados:</span>
+                        <span id="connectedUsers">1</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>Último Backup:</span>
+                        <span id="lastBackup">Hoy 08:00</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <script src="../scripts/services/apiService.js"></script>
+    <script src="../scripts/services/authService.js"></script>
+    <script src="../scripts/admin.js"></script>
+
+    <button id="logout-button">Cerrar Sesión</button>
+</body>
+</html>

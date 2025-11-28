@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cocina - FoodTech Solutions</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../styles/cocinero.css">
+</head>
+<body>
+    
+    <header class="main-header">
+        <div class="header-left">
+            <div class="logo"><i class="fa-solid fa-hat-chef"></i> Chef & <span>Cocina</span></div>
+        </div>
+        <div class="header-right">
+            <div class="user-info">
+                <span class="user-role">👨‍🍳 Cocinero</span>
+                <span class="user-name" id="nombre-cocinero">Cargando...</span>
+            </div>
+            <div class="header-icons">
+                <i class="fa-solid fa-bell" title="Notificaciones"></i>
+                <button class="header-icon-btn" id="logout-button" title="Cerrar Sesión">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="main-container">
+        
+        <div class="orders-column">
+            <div class="kitchen-controls">
+                <div class="filters">
+                    <button class="filter-btn active" data-filter="all">Todos</button>
+                    <button class="filter-btn" data-filter="pendiente">⏳ Pendientes</button>
+                    <button class="filter-btn" data-filter="preparacion">🔥 En Fuego</button>
+                </div>
+                <div class="kitchen-stats">
+                    <span>Pendientes: <b id="count-pendientes">0</b></span>
+                    <span>En Proceso: <b id="count-proceso">0</b></span>
+                </div>
+            </div>
+<div class="production-summary">
+    <h3>🔥 Producción Actual</h3>
+    <div class="summary-items" id="summary-list">
+        <div class="summary-tag">🍔 Hamburguesas: <b>5</b></div>
+        <div class="summary-tag">🌭 Perros: <b>3</b></div>
+        <div class="summary-tag">🥤 Jugos: <b>2</b></div>
+    </div>
+</div>
+
+        <div id="pedidos-grid" class="pedidos-grid">
+                </div>
+        </div>
+
+        <div class="menu-column">
+            
+            <div class="details-card" id="details-card">
+                <div class="details-placeholder">
+                    <i class="fa-solid fa-utensils"></i>
+                    <p>Selecciona un plato del menú para ver detalles</p>
+                </div>
+                <div class="details-content" style="display: none;">
+                    <img src="" alt="Plato" id="plato-img" class="plato-img">
+                    <h3 id="plato-nombre">Nombre del Plato</h3>
+                    <h4>Ingredientes:</h4>
+                    <ul id="plato-ingredientes">
+                        </ul>
+                </div>
+            </div>
+
+            <div class="menu-list-card">
+                <h3>📖 Recetario / Menú</h3>
+                <div class="menu-search">
+                    <input type="text" placeholder="Buscar plato...">
+                    <i class="fa-solid fa-search"></i>
+                </div>
+                <ul class="menu-items-list" id="menu-list">
+                    <li class="menu-item" onclick="mostrarDetalle('Hamburguesa Doble', '../assets/productos/hamburguesa_doble.png', ['Carne 200g', 'Queso Cheddar', 'Tocineta', 'Pan Brioche'])">
+                        <span>Hamburguesa Doble</span>
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </li>
+                     <li class="menu-item" onclick="mostrarDetalle('Perro Caliente', '../assets/productos/perro_caliente.png', ['Salchicha Americana', 'Queso Mozzarella', 'Papas Fosforito', 'Pan Perro'])">
+                        <span>Perro Caliente</span>
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </li>
+                </ul>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="../scripts/services/apiService.js"></script>
+    <script src="../scripts/services/authService.js"></script>
+    <script src="../scripts/cocinero.js"></script>
+
+</body>
+</html>

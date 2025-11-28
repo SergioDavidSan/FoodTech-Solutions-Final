@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reportes - FoodTech Solutions</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="../styles/reportes.css">
+</head>
+<body>
+    <header class="main-header">
+        <div class="user-info">👤 Ana Gerente</div>
+        <div class="header-icons">
+            <i class="fa-solid fa-bell"></i>
+            <i class="fa-solid fa-download"></i>
+        </div>
+    </header>
+
+    <div class="app-container">
+        <main class="main-content">
+            <h1>📊 Reportes y Analytics</h1>
+            
+            <!-- Filtros -->
+            <div class="filters-section">
+                <select id="rangoFecha">
+                    <option value="hoy">Hoy</option>
+                    <option value="semana">Esta Semana</option>
+                    <option value="mes">Este Mes</option>
+                    <option value="personalizado">Personalizado</option>
+                </select>
+                <button class="btn-primary" id="exportarBtn">
+                    <i class="fa-solid fa-file-export"></i> Exportar PDF
+                </button>
+            </div>
+
+            <!-- Métricas -->
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <h3>Ventas Totales</h3>
+                    <span class="metric-value">$2,450,000</span>
+                    <span class="metric-trend positive">↑ 12% vs semana pasada</span>
+                </div>
+                <div class="metric-card">
+                    <h3>Pedidos Realizados</h3>
+                    <span class="metric-value">156</span>
+                    <span class="metric-trend positive">↑ 8% vs semana pasada</span>
+                </div>
+                <div class="metric-card">
+                    <h3>Producto Más Vendido</h3>
+                    <span class="metric-value">Chuleta Valluna</span>
+                    <span class="metric-trend">45 unidades</span>
+                </div>
+            </div>
+
+            <!-- Gráficos -->
+            <div class="charts-section">
+                <div class="chart-card">
+                    <h3>Ventas por Categoría</h3>
+                    <div class="chart-placeholder">
+                        <p>📈 Gráfico de ventas por categoría</p>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <h3>Ventas por Hora</h3>
+                    <div class="chart-placeholder">
+                        <p>📊 Gráfico de ventas por hora del día</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <aside class="sidebar">
+            <div class="quick-reports">
+                <h3>📋 Reportes Rápidos</h3>
+                <button class="report-btn">
+                    <i class="fa-solid fa-utensils"></i> Productos Más Vendidos
+                </button>
+                <button class="report-btn">
+                    <i class="fa-solid fa-users"></i> Comportamiento de Clientes
+                </button>
+                <button class="report-btn">
+                    <i class="fa-solid fa-clock"></i> Tiempos de Preparación
+                </button>
+            </div>
+        </aside>
+    </div>
+
+    <script src="../scripts/reportes.js"></script>
+</body>
+</html>

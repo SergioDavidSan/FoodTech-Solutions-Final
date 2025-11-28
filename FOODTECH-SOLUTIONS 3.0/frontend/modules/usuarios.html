@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Usuarios - FoodTech Solutions</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="../styles/usuarios.css">
+</head>
+<body>
+    <header class="main-header">
+        <div class="user-info">👤 Admin Sistema</div>
+        <div class="header-icons">
+            <i class="fa-solid fa-bell"></i>
+            <i class="fa-solid fa-shield-halved"></i>
+        </div>
+    </header>
+
+    <div class="app-container">
+        <main class="main-content">
+            <div class="content-header">
+                <h1>👥 Gestión de Usuarios</h1>
+                <button class="btn-primary" id="nuevoUsuarioBtn">
+                    <i class="fa-solid fa-user-plus"></i> Nuevo Usuario
+                </button>
+            </div>
+
+            <table class="users-table">
+                <thead>
+                    <tr>
+                        <th>Usuario</th>
+                        <th>Nombre</th>
+                        <th>Rol</th>
+                        <th>Email</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>admin</td>
+                        <td>Daniel Lopez</td>
+                        <td><span class="rol-badge administrador">Administrador</span></td>
+                        <td>admin@foodtech.com</td>
+                        <td><span class="estado-badge activo">Activo</span></td>
+                        <td>
+                            <button class="btn-edit"><i class="fa-solid fa-pen"></i></button>
+                            <button class="btn-delete"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>mesero1</td>
+                        <td>Carlos Mesero</td>
+                        <td><span class="rol-badge mesero">Mesero</span></td>
+                        <td>carlos@foodtech.com</td>
+                        <td><span class="estado-badge activo">Activo</span></td>
+                        <td>
+                            <button class="btn-edit"><i class="fa-solid fa-pen"></i></button>
+                            <button class="btn-delete"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </main>
+
+        <aside class="sidebar">
+            <div class="user-stats">
+                <h3>📈 Estadísticas de Usuarios</h3>
+                <div class="stat-item">
+                    <span>Total Usuarios:</span>
+                    <span class="stat-number">8</span>
+                </div>
+                <div class="stat-item">
+                    <span>Activos:</span>
+                    <span class="stat-number">7</span>
+                </div>
+                <div class="stat-item">
+                    <span>Inactivos:</span>
+                    <span class="stat-number">1</span>
+                </div>
+            </div>
+
+            <div class="security-log">
+                <h3>🛡️ Log de Seguridad</h3>
+                <div class="log-item">
+                    <span>Login exitoso - admin</span>
+                    <small>Hace 2 horas</small>
+                </div>
+                <div class="log-item">
+                    <span>Intento fallido - usuario123</span>
+                    <small>Hace 4 horas</small>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <script src="../scripts/usuarios.js"></script>
+</body>
+</html>

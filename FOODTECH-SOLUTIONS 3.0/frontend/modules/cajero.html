@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Caja - FoodTech Solutions</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../styles/cajero.css">
+</head>
+<body>
+    
+    <header class="main-header">
+        <div class="header-left">
+            <div class="logo"><i class="fa-solid fa-cash-register"></i> FoodTech <span>Caja</span></div>
+        </div>
+        <div class="header-right">
+            <div class="user-info">
+                <span class="user-role">💰 Cajero</span>
+                <span class="user-name" id="nombre-usuario">Cargando...</span>
+            </div>
+           <div class="header-icons">
+                <button class="icon-btn" id="btn-notificaciones" title="Notificaciones">
+                    <i class="fa-solid fa-bell"></i>
+                    <span class="badge" id="badge-notificaciones" style="display: none;">0</span>
+                </button>
+                
+                <div class="notifications-dropdown" id="notificaciones-menu">
+                    <div class="notif-header">
+                        <span>Notificaciones</span>
+                        <button class="btn-clear-notif" onclick="limpiarNotificaciones()">Borrar todo</button>
+                    </div>
+                    <ul class="notif-list" id="lista-notificaciones">
+                        <li class="notif-item"><p style="padding:10px; color:#999">No hay notificaciones nuevas</p></li>
+                    </ul>
+                </div>
+
+                <button class="icon-btn" title="Configuración">
+                    <i class="fa-solid fa-gear"></i>
+                </button>
+                <div class="divider"></div>
+                <button class="icon-btn logout" id="logout-button" title="Cerrar Sesión">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="main-container">
+        
+        <div class="tables-section">
+            <div class="section-header">
+                <h2>🏢 Estado del Salón</h2>
+                <div class="legend">
+                    <span class="status-dot free"></span> Libre
+                    <span class="status-dot busy"></span> Ocupada
+                    <span class="status-dot paying"></span> Por Cobrar
+                </div>
+            </div>
+
+            <div class="tables-grid" id="tables-grid">
+                </div>
+        </div>
+
+        <div class="ticket-section">
+            <div class="ticket-header">
+                <h3>Detalle de Cuenta</h3>
+                <span class="table-id" id="selected-table-id">Seleccione Mesa</span>
+            </div>
+
+            <div class="ticket-body">
+                <div class="ticket-items-list" id="ticket-items">
+                    <div class="empty-state">
+                        <i class="fa-solid fa-hand-pointer"></i>
+                        <p>Selecciona una mesa ocupada para ver su consumo</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ticket-footer">
+                <div class="resumen-row">
+                    <span>Subtotal:</span>
+                    <span id="subtotal">$0</span>
+                </div>
+                <div class="resumen-row">
+                    <span>Propina (10%):</span> <span id="propina">$0</span>
+                </div>
+                <div class="resumen-row total">
+                    <span>TOTAL A PAGAR:</span>
+                    <span id="total">$0</span>
+                </div>
+
+                <div class="payment-methods">
+                    <button class="pm-btn active"><i class="fa-solid fa-money-bill"></i> Efec.</button>
+                    <button class="pm-btn"><i class="fa-regular fa-credit-card"></i> Tarj.</button>
+                    <button class="pm-btn"><i class="fa-solid fa-qrcode"></i> QR</button>
+                </div>
+
+                <button class="btn-pay" id="btn-pay" disabled onclick="procesarPago()">
+                    Cobrar Mesa
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../scripts/services/apiService.js"></script>
+    <script src="../scripts/services/authService.js"></script>
+    <script src="../scripts/cajero.js"></script>
+
+</body>
+</html>

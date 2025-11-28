@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro - Food Tech Solutions</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../styles/register.css">
+</head>
+<body>
+    
+    <div class="main-wrapper">
+        <div class="register-card">
+            
+            <div class="card-header">
+                <img src="../imagenes/logo_food_tech.png" alt="Logo Food Tech" class="logo">
+                <h2>Únete al Equipo</h2>
+                <p>Crea tu cuenta para empezar a gestionar</p>
+            </div>
+
+            <form id="register-form">
+                
+                <div class="form-group">
+                    <label for="rol">Selecciona tu Rol</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-briefcase icon"></i>
+                        <select id="rol" name="rol" required>
+                            <option value="" disabled selected>-- Elige un cargo --</option>
+                            <option value="administrador">👨‍💼 Administrador</option>
+                            <option value="cajero">💰 Cajero</option>
+                            <option value="cocinero">👨‍🍳 Cocinero</option>
+                            <option value="mesero">💁 Mesero</option>
+                        </select>
+                        <i class="fa-solid fa-chevron-down arrow-icon"></i>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="usuario">Nombre de Usuario</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-user icon"></i>
+                        <input type="text" id="usuario" name="usuario" placeholder="Ej: juanperez" required autocomplete="off">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">Correo Electrónico</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-envelope icon"></i>
+                        <input type="email" id="email" name="email" placeholder="juan@foodtech.com" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="contrasena">Contraseña</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-lock icon"></i>
+                        <input type="password" id="contrasena" name="contrasena" placeholder="••••••••" required>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-register" id="register-button">
+                    <span id="btn-text">Crear Cuenta</span>
+                    <span id="btn-spinner" class="spinner"></span>
+                </button>
+
+            </form>
+
+            <div class="card-footer">
+                <p>¿Ya tienes cuenta? <a href="login.html">Iniciar Sesión</a></p>
+            </div>
+        </div>
+    </div>
+    
+    <script src="../scripts/services/apiService.js"></script>
+    <script src="../scripts/services/authService.js"></script>
+    <script src="../scripts/register.js"></script>
+</body>
+</html>

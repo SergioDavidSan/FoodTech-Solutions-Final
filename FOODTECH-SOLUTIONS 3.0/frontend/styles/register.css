@@ -1,0 +1,154 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
+
+body {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); /* Un degradado moderno */
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.main-wrapper {
+    width: 100%;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+}
+
+/* --- TARJETA PRINCIPAL --- */
+.register-card {
+    background: white;
+    width: 100%;
+    max-width: 420px;
+    padding: 40px;
+    border-radius: 15px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+    animation: slideUp 0.5s ease-out;
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- HEADER --- */
+.card-header { text-align: center; margin-bottom: 30px; }
+
+.logo { width: 80px; margin-bottom: 15px; }
+
+.card-header h2 { color: #333; font-weight: 600; margin-bottom: 5px; }
+.card-header p { color: #666; font-size: 0.9rem; }
+
+/* --- FORMULARIO --- */
+.form-group { margin-bottom: 20px; }
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: #444;
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+/* Estilo de los Inputs con Iconos */
+.input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-wrapper .icon {
+    position: absolute;
+    left: 15px;
+    color: #aaa;
+    transition: color 0.3s;
+}
+
+.input-wrapper input, 
+.input-wrapper select {
+    width: 100%;
+    padding: 12px 15px 12px 45px; /* Espacio para el icono */
+    border: 2px solid #eee;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: all 0.3s;
+    outline: none;
+    background: #fafafa;
+    appearance: none; /* Quita estilo default del select */
+}
+
+/* Icono de flecha para el select */
+.arrow-icon {
+    position: absolute;
+    right: 15px;
+    color: #aaa;
+    pointer-events: none;
+}
+
+/* Efectos al hacer click/focus */
+.input-wrapper input:focus,
+.input-wrapper select:focus {
+    border-color: #764ba2;
+    background: white;
+    box-shadow: 0 0 0 4px rgba(118, 75, 162, 0.1);
+}
+
+.input-wrapper input:focus + .icon,
+.input-wrapper select:focus ~ .icon {
+    color: #764ba2; /* El icono cambia de color */
+}
+
+/* --- BOTÓN --- */
+.btn-register {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(to right, #667eea, #764ba2);
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+
+.btn-register:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(118, 75, 162, 0.3);
+}
+
+.btn-register:active { transform: translateY(0); }
+
+/* Spinner de carga */
+.spinner {
+    display: none;
+    width: 20px; height: 20px;
+    border: 3px solid rgba(255,255,255,0.3);
+    border-radius: 50%;
+    border-top-color: white;
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* --- FOOTER --- */
+.card-footer {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.card-footer a {
+    color: #764ba2;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.card-footer a:hover { text-decoration: underline; }
