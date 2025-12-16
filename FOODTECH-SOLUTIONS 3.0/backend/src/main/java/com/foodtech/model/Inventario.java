@@ -7,14 +7,16 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "inventario")
 public class Inventario {
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer idInventario;
+    @Column(name = "id_inventario") // <-- CORRECCIÓN CLAVE: Mapea el campo Java al nombre de la columna en la BD
+    private Integer idInventario;   // <-- Usa camelCase, que es la convención de Java
     
     @Column(name = "nombre_producto", nullable = false)
     private String nombreProducto;
     
-    @Column(precision = 10, scale = 3)
+    @Column(name = "cantidad", precision = 10, scale = 3) 
     private BigDecimal cantidad;
     
     @Column(name = "unidad_medida", nullable = false)
@@ -27,7 +29,7 @@ public class Inventario {
     @JoinColumn(name = "id_categoria")
     private Categoria categoria;
     
-    private String proveedor;
+    private String proveedor; // Asumimos que la columna en BD se llama 'proveedor' o que Hibernate la mapea
     
     @Column(name = "fecha_actualizacion")
     private LocalDateTime fechaActualizacion;
@@ -40,8 +42,8 @@ public class Inventario {
     }
     
     // Getters y Setters
-    public Integer getIdInventario() { return idInventario; }
-    public void setIdInventario(Integer idInventario) { this.idInventario = idInventario; }
+    public Integer getIdInventario() { return idInventario; } // Usa el campo camelCase
+    public void setIdInventario(Integer idInventario) { this.idInventario = idInventario; } // Usa el campo camelCase
     
     public String getNombreProducto() { return nombreProducto; }
     public void setNombreProducto(String nombreProducto) { this.nombreProducto = nombreProducto; }

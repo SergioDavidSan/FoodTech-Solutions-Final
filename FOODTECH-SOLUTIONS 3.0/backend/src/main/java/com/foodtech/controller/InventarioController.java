@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/inventario")
+@RequestMapping("api/inventario")
 @CrossOrigin(origins = "*")
 @SuppressWarnings({"java:S6813", "java:S1452"})
 public class InventarioController {

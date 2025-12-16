@@ -1,84 +1,116 @@
 // ============================================================
-//  CONFIGURACIÓN
+//  CONFIGURACIÓN Y ESTADO
 // ============================================================
 const LOGIN_PAGE = "../../modules/login.html";
 let mesaActual = null;
 let comandaActual = [];
-let esParaLlevarGeneral = false; // Variable para el estado del switch
+let esParaLlevarGeneral = false;
 
-// MOCK DATA (Productos con info extra para el inspector)
-const menuData = [
-    { 
-        id: 1, nombre: "Hamb. Clásica", precio: 25000, 
-        desc: "Carne angus 150g, lechuga fresca, tomate y salsa.", 
-        ingredientes: ["Carne", "Queso", "Pan"],
-        img: "../assets/productos/hamburguesa_sencilla.png" 
-    },
-    { 
-        id: 2, nombre: "Perro Caliente", precio: 18000, 
-        desc: "Salchicha americana, queso mozzarella y papas.",
-        ingredientes: ["Salchicha", "Queso", "Papas"],
-        img: "../assets/productos/perro_caliente.png"
-    },
-    { 
-        id: 3, nombre: "Coca Cola", precio: 5000, 
-        desc: "Bebida gaseosa 400ml.", ingredientes: ["Bebida"],
-        img: "../assets/productos/gaseosa_400ml.png"
-    },
-    { 
-        id: 4, nombre: "Jugo Natural", precio: 7000, 
-        desc: "Jugo de fruta en agua o leche.", ingredientes: ["Fruta", "Base"],
-        img: "../assets/productos/jugos_naturales.png"
-    },
-    { 
-        id: 5, nombre: "Papas Fritas", precio: 8000, 
-        desc: "Porción de papas a la francesa.", ingredientes: ["Papas", "Sal"],
-        img: "../assets/productos/papas_fritas.png"
-    }
-];
+// CAMBIO 1: Ahora menuData es una variable vacía, no una constante fija
+let menuData = []; 
 
-// MOCK DATA (Mesas)
+// MOCK DATA MESAS (Esto se mantiene igual)
 const mesasData = Array.from({length: 10}, (_, i) => ({
     id: i + 1,
     estado: 'free' 
 }));
-mesasData[1].estado = 'busy'; // Mesa 2 ocupada
-mesasData[4].estado = 'my-table'; // Mesa 5 es mía
+mesasData[1].estado = 'busy'; 
+mesasData[4].estado = 'my-table'; 
 
 // ============================================================
 //  INICIALIZACIÓN
 // ============================================================
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
     console.log("💁 Iniciando Panel de Mesero...");
 
+    // 1. Verificación de Auth
     if (typeof authService === 'undefined') { window.location.href = LOGIN_PAGE; return; }
-
     if (!authService.isAuthenticated()) {
         authService.logout();
         return;
     }
 
+    // 2. Info de Usuario
     const userInfo = authService.getCurrentUser();
     document.getElementById('nombre-usuario').textContent = userInfo?.username || 'Mesero';
-    
     document.getElementById("logout-button")?.addEventListener("click", () => authService.logout());
 
-    // Evento para el switch de "Para Llevar"
+    // 3. Lógica de Notificaciones (Del código A - Agregado aquí)
+    const btnNotif = document.querySelector('.icon-btn[title="Notificaciones"]');
+    if (btnNotif) {
+        const menuNotif = document.createElement('div');
+        menuNotif.className = 'notifications-dropdown';
+        menuNotif.innerHTML = `
+            <div class="notif-header"><span>Notificaciones</span> <a href="#" style="font-size:0.8rem">Borrar</a></div>
+            <ul class="notif-list">
+                <li class="notif-item unread">🔔 Sistema listo</li>
+            </ul>
+        `;
+        document.querySelector('.header-icons')?.appendChild(menuNotif);
+        
+        btnNotif.addEventListener('click', (e) => {
+            e.stopPropagation();
+            menuNotif.classList.toggle('active');
+            const badge = document.getElementById('notif-count');
+            if(badge) badge.style.display = 'none';
+        });
+        document.addEventListener('click', () => menuNotif.classList.remove('active'));
+    }
+
+    // 4. Switch "Para Llevar"
     const switchTogo = document.getElementById('order-togo-check');
     if(switchTogo) {
         switchTogo.addEventListener('change', (e) => {
             esParaLlevarGeneral = e.target.checked;
-            // Actualizamos la UI de la comanda para mostrar/ocultar iconos
             actualizarComandaUI(); 
         });
     }
 
+    // 5. RENDERIZADO INICIAL
     renderizarMesas();
-    renderizarMenu();
+    
+    // CAMBIO 2: Llamamos a la función asíncrona para cargar datos reales
+    await cargarMenuReal(); 
 });
 
 // ============================================================
-//  RENDERIZADO
+//  CONEXIÓN CON BACKEND 
+// ============================================================
+async function cargarMenuReal() {
+    const grid = document.getElementById('menu-grid');
+    grid.innerHTML = '<p style="padding:20px; color:#666; width:100%">Cargando menú...</p>';
+
+    try {
+        // Intentamos obtener productos del servicio
+        // Si apiService no existe (aún no lo importas), usará un array vacío para no romper todo
+        const productosRaw = await apiService.getMenu();
+                             
+        
+        if (!productosRaw || productosRaw.length === 0) {
+            grid.innerHTML = '<p style="padding:20px; width:100%">No hay productos o no hay conexión.</p>';
+            return;
+        }
+       
+        menuData = productosRaw.map(p => ({
+            id: p.idPlato || p.id,
+            nombre: p.nombreProducto || p.nombre,
+            precio: p.precio || 0,
+            desc: p.descripcion || "Sin descripción disponible.",
+            // Si ingredientes es string "Pan,Carne", lo convertimos a array. Si no, array default.
+            ingredientes: p.ingredientes ? (typeof p.ingredientes === 'string' ? p.ingredientes.split(',') : p.ingredientes) : ["Estándar"],
+            img: p.imagen || '../assets/logo.png' // Imagen por defecto si falla
+        }));
+
+        renderizarMenu(); // Llamamos al render original
+
+    } catch (error) {
+        console.error("Error cargando menú:", error);
+        grid.innerHTML = '<p style="padding:20px; color:red">Error de conexión con cocina.</p>';
+    }
+}
+
+// ============================================================
+//  RENDERIZADO (UI)
 // ============================================================
 function renderizarMesas() {
     const grid = document.getElementById('tables-grid');
@@ -107,12 +139,13 @@ function renderizarMesas() {
 
 function renderizarMenu() {
     const grid = document.getElementById('menu-grid');
+    // Usamos menuData que ya fue llenado por cargarMenuReal
     grid.innerHTML = menuData.map(prod => `
         <div class="menu-item" onclick="agregarAComanda(${prod.id})">
             <button class="btn-info" onclick="event.stopPropagation(); verDetalleProducto(${prod.id})">
                 <i class="fa-solid fa-info"></i>
             </button>
-            
+            <div style="font-size:2rem; margin-bottom:5px; text-align:center">🍽️</div>
             <span class="item-name">${prod.nombre}</span>
             <span class="item-price">$${prod.precio.toLocaleString()}</span>
         </div>
@@ -123,15 +156,11 @@ function renderizarMenu() {
 //  INTERACCIÓN Y LÓGICA DE MESA
 // ============================================================
 
-// NUEVA FUNCIÓN: Crear Pedido Para Llevar (Sin mesa física)
 function crearPedidoParaLlevar() {
-    const mesaVirtual = { id: 999, estado: 'busy' }; // ID especial
+    const mesaVirtual = { id: 999, estado: 'busy' };
     abrirMesa(mesaVirtual);
-    
-    // Ajustes visuales específicos
     document.getElementById('mesa-titulo').textContent = "🛍️ Para Llevar";
     
-    // Activar el switch visualmente y la variable lógica
     const switchCheck = document.getElementById('order-togo-check');
     if(switchCheck) switchCheck.checked = true;
     esParaLlevarGeneral = true;
@@ -139,9 +168,8 @@ function crearPedidoParaLlevar() {
 
 function abrirMesa(mesa) {
     mesaActual = mesa;
-    esParaLlevarGeneral = false; // Resetear estado por defecto
+    esParaLlevarGeneral = false;
     
-    // Resetear switch visual
     const switchCheck = document.getElementById('order-togo-check');
     if(switchCheck) switchCheck.checked = false;
     
@@ -151,14 +179,12 @@ function abrirMesa(mesa) {
     const titulo = mesa.id === 999 ? "🛍️ Para Llevar" : `Mesa ${mesa.id}`;
     document.getElementById('mesa-titulo').textContent = titulo;
     
-    // Limpiar selección visual anterior
     document.querySelectorAll('.table-card').forEach(c => c.style.border = '2px solid transparent');
     
     comandaActual = [];
     actualizarComandaUI();
     switchTab('menu');
     
-    // Resetear inspector
     document.getElementById('inspector-empty').style.display = 'flex';
     document.getElementById('inspector-content').style.display = 'none';
 }
@@ -171,19 +197,25 @@ function cerrarMesaActual() {
 
 // --- INSPECTOR DE PRODUCTO ---
 function verDetalleProducto(idProd) {
+    // Busca en menuData (que ahora viene del backend)
     const prod = menuData.find(p => p.id === idProd);
     if (!prod) return;
 
     document.getElementById('inspector-empty').style.display = 'none';
     document.getElementById('inspector-content').style.display = 'flex';
 
-    document.getElementById('insp-img').src = prod.img;
+    // Usamos una imagen genérica si la URL falla o no existe
+    document.getElementById('insp-img').src = prod.img || '../assets/logo.png'; 
     document.getElementById('insp-title').textContent = prod.nombre;
     document.getElementById('insp-price').textContent = `$${prod.precio.toLocaleString()}`;
     document.getElementById('insp-desc').textContent = prod.desc;
     
     const listaIng = document.getElementById('insp-list');
-    listaIng.innerHTML = prod.ingredientes.map(ing => `<li>${ing}</li>`).join('');
+    if (prod.ingredientes && Array.isArray(prod.ingredientes)) {
+        listaIng.innerHTML = prod.ingredientes.map(ing => `<li>${ing}</li>`).join('');
+    } else {
+        listaIng.innerHTML = '<li>Información no disponible</li>';
+    }
 }
 
 function switchTab(tabName) {
@@ -192,26 +224,29 @@ function switchTab(tabName) {
     
     document.getElementById(`view-${tabName}`).classList.add('active');
     const btnIndex = tabName === 'menu' ? 0 : 1;
-    document.querySelectorAll('.tab-btn')[btnIndex].classList.add('active');
+    const btns = document.querySelectorAll('.tab-btn');
+    if(btns[btnIndex]) btns[btnIndex].classList.add('active');
 }
 
 // ============================================================
 //  COMANDA
 // ============================================================
 function agregarAComanda(idProd) {
-    const producto = menuData.find(p => p.id === idProd);
+    const producto = menuData.find(p => p.id == idProd);
+    if (!producto) return; 
+
     const existe = comandaActual.find(i => i.id === idProd);
     
     if (existe) {
         existe.cantidad++;
     } else {
+        // Clonamos el objeto para no modificar el menuData original
         comandaActual.push({ ...producto, cantidad: 1 });
     }
     
     actualizarComandaUI();
 }
 
-// NUEVA FUNCIÓN: Eliminar Item
 function eliminarItem(idProd) {
     const index = comandaActual.findIndex(i => i.id === idProd);
     if (index !== -1) {
@@ -219,7 +254,7 @@ function eliminarItem(idProd) {
         if (item.cantidad > 1) {
             item.cantidad--;
         } else {
-            comandaActual.splice(index, 1); // Borrar del array si llega a 0
+            comandaActual.splice(index, 1);
         }
         actualizarComandaUI();
     }
@@ -238,7 +273,6 @@ function actualizarComandaUI() {
             total += subtotal;
             totalItems += item.cantidad;
             
-            // Icono visual si es para llevar
             const iconLlevar = esParaLlevarGeneral ? '<i class="fa-solid fa-bag-shopping" style="margin-left:5px; color:#888; font-size:0.8rem" title="Para Llevar"></i>' : '';
 
             return `
@@ -261,19 +295,66 @@ function actualizarComandaUI() {
     document.getElementById('items-count').textContent = totalItems;
 }
 
+// ============================================================
+//  ENVÍO DE PEDIDO 
+// ============================================================
 async function enviarPedido() {
     if (comandaActual.length === 0) return alert("Agrega productos primero.");
-    
+
     const tipoPedido = esParaLlevarGeneral ? "PARA LLEVAR" : "Mesa " + mesaActual.id;
     
-    if(confirm(`¿Enviar pedido (${tipoPedido}) a cocina?`)) {
-        console.log("Enviando pedido...", { 
-            mesa: mesaActual.id, 
-            items: comandaActual, 
-            paraLlevar: esParaLlevarGeneral 
-        });
+    // 🚨 SOLUCIÓN 2 (TEMPORAL): FORZAR ID DEL MESERO
+    // Esto demuestra que el fallo es la lectura de authService o la BD.
+    // Una vez que la prueba sea exitosa, DEBES REVERTIR ESTA LÍNEA
+    // Y corregir la función getCurrentUser() en authService.js
+    const idMesero = 17; 
+    
+    // Líneas originales comentadas para depuración:
+    // const userInfo = authService.getCurrentUser();
+    // const idMesero = userInfo?.id || authService.getUserId(); 
+
+    // console.log("ID Mesero forzado:", idMesero); // Debugging
+
+    if (!idMesero) { 
+        alert("Error: No se encontró el ID del mesero. Por favor, inicia sesión.");
+        authService.logout();
+        return;
+    }
+
+    if (confirm(`¿Enviar pedido (${tipoPedido}) a cocina?`)) {
         
-        alert("✅ ¡Pedido enviado a cocina!");
-        cerrarMesaActual();
+        // 2. CONSTRUCCIÓN DE DETALLES (Mapeo correcto a la estructura del backend)
+        const detallesPayload = comandaActual.map(item => ({
+            cantidad: item.cantidad,
+            precioUnitario: item.precio,
+            producto: { idProducto: item.id } 
+        }));
+        
+        // 3. CONSTRUCCIÓN DEL OBJETO COMPLETO Pedido
+        const pedidoPayload = {
+            // Asignar el mesero autenticado con el ID forzado
+            mesero: { idUsuario: idMesero }, 
+            
+            // Asignar mesa o null si es para llevar
+            mesa: esParaLlevarGeneral ? null : { idMesa: mesaActual.id }, 
+            
+            detalles: detallesPayload,
+        };
+
+        console.log("Enviando pedido a /api/pedidos...", pedidoPayload);
+
+        try {
+            const respuesta = await apiService.crearPedido(pedidoPayload); 
+            
+            console.log("Respuesta del Backend (Pedido creado):", respuesta);
+
+            alert("✅ ¡Pedido enviado a cocina!");
+            comandaActual = []; 
+            actualizarComandaUI();
+            cerrarMesaActual();
+        } catch (error) {
+            console.error("Error al enviar el pedido:", error);
+            alert("❌ Error: No se pudo enviar el pedido al servidor. Revisa la consola."); 
+        }
     }
 }

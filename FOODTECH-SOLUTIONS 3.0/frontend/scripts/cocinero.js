@@ -1,12 +1,24 @@
 // ============================================================
-//  VARIABLES Y CONSTANTES
+//  VARIABLES Y CONSTANTES
 // ============================================================
 const LOGIN_PAGE = "../../modules/login.html"; 
 
 // ============================================================
-//  SERVICIOS (Wrappers)
+//  SERVICIOS (Wrappers)
 // ============================================================
 const pedidoService = {
+    // 🚀 NUEVA FUNCIÓN: Llama al endpoint único del backend para la cocina (GET /api/pedidos/cocina)
+    async getPedidosParaCocina() {
+        try {
+            // Asume que apiService.request utiliza la URL base configurada y hace la llamada GET
+            return await apiService.request(`/pedidos/cocina`);
+        } catch (error) {
+            console.error("Error obteniendo pedidos para cocina:", error);
+            return [];
+        }
+    },
+
+    // La función original (getPedidosPorEstado) se mantiene pero no se usará para la carga principal.
     async getPedidosPorEstado(estado) {
         try {
             return await apiService.request(`/pedidos/estado/${estado}`);
@@ -17,6 +29,7 @@ const pedidoService = {
     },
 
     async updatePedidoEstado(id, estado) {
+        // Asume que apiService.updatePedidoEstado realiza el PUT /api/pedidos/{id}/estado/{estado}
         return await apiService.updatePedidoEstado(id, estado);
     },
 
@@ -26,7 +39,7 @@ const pedidoService = {
 };
 
 // ============================================================
-//  MAIN (Inicialización)
+//  MAIN (Inicialización)
 // ============================================================
 document.addEventListener("DOMContentLoaded", () => {
     console.log("👨‍🍳 Iniciando Panel de Cocinero...");
@@ -77,7 +90,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 // ============================================================
-//  LÓGICA DE PEDIDOS
+//  LÓGICA DE PEDIDOS
 // ============================================================
 
 async function cargarPedidosActivos() {
@@ -85,28 +98,16 @@ async function cargarPedidosActivos() {
     if (!contenedor) return;
 
     try {
-        console.log("🔄 Actualizando pedidos...");
-        const pedidosPendientes = await pedidoService.getPedidosPorEstado("PENDIENTE");
-        const pedidosEnPreparacion = await pedidoService.getPedidosPorEstado("EN_PREPARACION");
+        console.log("🔄 Actualizando pedidos (Llamando /cocina)...");
         
-        const todosLosPedidos = [...pedidosEnPreparacion, ...pedidosPendientes];
-        // --- DATOS DE PRUEBA (BORRAR LUEGO) ---
-todosLosPedidos.push({
-    id: 999,
-    numeroPedido: 999,
-    estado: 'PENDIENTE',
-    mesa: 5,
-    fechaCreacion: new Date().toISOString(),
-    items: [
-        { cantidad: 1, nombreProducto: "Ensalada César", notas: "ALERGIA AL GLUTEN" }, // <--- Esto activará la alerta roja
-        { cantidad: 2, nombreProducto: "Agua", notas: "sin hielo" } // <--- Esto activará la nota normal
-    ]
-});
-// --------------------------------------
+        // 🚀 CAMBIO CRÍTICO: Una sola llamada al endpoint que trae todos los pedidos de cocina
+        const todosLosPedidos = await pedidoService.getPedidosParaCocina();
+        
+        // ❌ ELIMINADO: Se eliminaron los datos de prueba (id: 999)
 
         actualizarVistaPedidos(todosLosPedidos);
         actualizarEstadisticas(todosLosPedidos);
-        actualizarResumenProduccion(todosLosPedidos); // <--- ¡AHORA SÍ SE LLAMA!
+        actualizarResumenProduccion(todosLosPedidos); 
 
     } catch (error) {
         console.error("Error cargando pedidos:", error);
@@ -128,12 +129,17 @@ function actualizarVistaPedidos(pedidos) {
 }
 
 function crearTarjetaPedido(pedido) {
+    // 🚨 NOTA IMPORTANTE: Asegúrate de que el backend envíe 'mesa' como un objeto o que tenga el id directamente.
+    // Si 'pedido.mesa' es un objeto Mesa, deberás usar: pedido.mesa.idMesa o similar.
+    const mesaNumero = pedido.mesa?.idMesa || pedido.mesa || "Barra";
+    
     const estadoClass = pedido.estado === 'EN_PREPARACION' ? 'preparacion' : 'pendiente';
     const estadoTexto = pedido.estado === 'EN_PREPARACION' ? 'En Preparación' : 'Pendiente';
     
     // --- 🚦 SEMÁFORO DE TIEMPO ---
     const ahora = new Date();
-    const creado = new Date(pedido.fechaCreacion); // Asegúrate que el backend envíe fechaCreacion
+    // 🚨 El campo de fecha/hora debe ser 'fechaHora' o 'fechaHora' (del Pedido.java) para ser preciso
+    const creado = new Date(pedido.fechaHora || pedido.fechaCreacion); 
     const minutosPasados = Math.floor((ahora - creado) / 60000); // Diferencia en minutos
     
     let tiempoClass = 'tiempo-verde'; 
@@ -148,9 +154,13 @@ function crearTarjetaPedido(pedido) {
     }
 
     // --- ITEMS Y ALERTAS ---
-    const itemsHtml = (pedido.items || []).map(item => {
-        // Detectar alertas en las notas
-        const notas = item.notas ? item.notas.toLowerCase() : '';
+    // 🚨 El DetallePedido en el backend se llama 'detalles', no 'items'.
+    const itemsHtml = (pedido.detalles || []).map(item => {
+        // En DetallePedido, el producto es un objeto (Plato). Usaremos item.plato.nombreProducto
+        const nombreProducto = item.plato?.nombreProducto || "Item Desconocido"; 
+        
+        // Notas del pedido completo (si aplican) o notas específicas del detalle.
+        const notas = item.notas ? item.notas.toLowerCase() : ''; 
         const esAlergia = notas.includes('alergia') || notas.includes('sin') || notas.includes('gluten') || notas.includes('no');
         
         const alertaHtml = esAlergia 
@@ -161,12 +171,12 @@ function crearTarjetaPedido(pedido) {
         <div class="item">
             <div class="item-details">
                 <span class="cantidad">${item.cantidad}x</span>
-                <span class="nombre">${item.nombreProducto}</span>
+                <span class="nombre">${nombreProducto}</span>
             </div>
             ${alertaHtml}
             ${pedido.estado === 'PENDIENTE' 
-                ? `<button class="btn-preparar">Marchar</button>` 
-                : `` // En preparación mostramos el botón global abajo
+                ? `<button class="btn-preparar" data-detalle-id="${item.idDetallePedido}">Marchar</button>` 
+                : `` 
             }
         </div>
         `;
@@ -178,11 +188,11 @@ function crearTarjetaPedido(pedido) {
         : ``;
 
     return `
-        <div class="ticket ${estadoClass} ${tiempoClass}" data-pedido-id="${pedido.id}">
+        <div class="ticket ${estadoClass} ${tiempoClass}" data-pedido-id="${pedido.idPedido}">
             <div class="ticket-header">
                 <div class="mesa-info">
-                    <span class="mesa">Mesa ${pedido.mesa || "Barra"}</span>
-                    <span class="id-pedido">#${pedido.numeroPedido || pedido.id}</span>
+                    <span class="mesa">Mesa ${mesaNumero}</span>
+                    <span class="id-pedido">#${pedido.idPedido}</span>
                 </div>
                 <div class="timer-badge">
                     ${iconoTiempo} ${minutosPasados} min
@@ -200,8 +210,9 @@ function crearTarjetaPedido(pedido) {
 }
 
 async function iniciarPreparacion(btn) {
-    const pedidoCard = btn.closest(".ticket") || btn.closest(".pedido-card");
-    const pedidoId = pedidoCard.dataset.pedidoId;
+    const pedidoCard = btn.closest(".ticket");
+    // 🚨 Usamos idPedido, que es el nombre de la propiedad en el backend
+    const pedidoId = pedidoCard.dataset.pedidoId; 
 
     const originalText = btn.textContent;
     btn.textContent = "...";
@@ -222,7 +233,6 @@ async function iniciarPreparacion(btn) {
 async function terminarPreparacion(btn) {
     const pedidoCard = btn.closest(".ticket");
     const pedidoId = pedidoCard.dataset.pedidoId;
-    // Obtenemos el número de mesa del HTML para la notificación
     const mesaTexto = pedidoCard.querySelector(".mesa").textContent;
 
     if (!confirm(`¿Pedido de ${mesaTexto} listo para servir?`)) return;
@@ -230,11 +240,9 @@ async function terminarPreparacion(btn) {
     try {
         await pedidoService.marcarPedidoListo(pedidoId);
         
-        // Efecto visual de salida
         pedidoCard.style.transform = "scale(0.9)";
         pedidoCard.style.opacity = "0";
         
-        // 🔔 NOTIFICACIÓN AL MESERO (Simulada visualmente)
         mostrarExito(`🔔 ¡OÍDO! ${mesaTexto} listo. Notificando a mesero...`);
 
         setTimeout(async () => {
@@ -248,7 +256,7 @@ async function terminarPreparacion(btn) {
 }
 
 // ============================================================
-//  PANEL LATERAL (Estadísticas, Resumen y Detalles)
+//  PANEL LATERAL (Estadísticas, Resumen y Detalles)
 // ============================================================
 
 function actualizarEstadisticas(pedidos) {
@@ -256,7 +264,7 @@ function actualizarEstadisticas(pedidos) {
         const pendientes = pedidos.filter(p => p.estado === 'PENDIENTE').length;
         const enProceso = pedidos.filter(p => p.estado === 'EN_PREPARACION').length;
         
-        const stats = document.querySelectorAll(".stat-number"); // Asegúrate de tener estos elementos en HTML
+        const stats = document.querySelectorAll(".stat-number"); 
         if (stats.length > 0) {
             if(document.getElementById('count-pendientes')) 
                 document.getElementById('count-pendientes').textContent = pendientes;
@@ -271,8 +279,9 @@ function actualizarResumenProduccion(pedidos) {
     
     pedidos.forEach(pedido => {
         if (pedido.estado !== 'LISTO') {
-            pedido.items.forEach(item => {
-                const nombre = item.nombreProducto; 
+            // 🚨 USAMOS pedido.detalles y item.plato.nombreProducto
+            (pedido.detalles || []).forEach(item => {
+                const nombre = item.plato?.nombreProducto || "Item Desconocido"; 
                 resumen[nombre] = (resumen[nombre] || 0) + item.cantidad;
             });
         }
@@ -318,7 +327,7 @@ function mostrarDetalle(nombre, imagenUrl, ingredientes) {
 }
 
 // ============================================================
-//  UTILIDADES
+//  UTILIDADES
 // ============================================================
 function mostrarError(mensaje) {
     alert("❌ " + mensaje);
@@ -326,6 +335,4 @@ function mostrarError(mensaje) {
 
 function mostrarExito(mensaje) {
     console.log("✅ " + mensaje);
-    // Si quieres un toast simple en lugar de alert:
-    // alert("✅ " + mensaje); 
 }

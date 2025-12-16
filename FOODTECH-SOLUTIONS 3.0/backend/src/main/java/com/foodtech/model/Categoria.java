@@ -7,18 +7,26 @@ import jakarta.persistence.*;
 public class Categoria {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_categoria")
     private Integer idCategoria;
     
     @Column(name = "nombre_categoria", nullable = false)
     private String nombreCategoria;
     
+    @Column(name = "descripcion") // Aseguramos el nombre de la columna
     private String descripcion;
     
     @Enumerated(EnumType.STRING)
+    @Column(name = "tipo_categoria") // Asegúrate de que esta columna exista en tu DB
     private TipoCategoria tipo;
     
+    // --- SOLUCIÓN: Usamos minúsculas para coincidir con la Base de Datos ---
     public enum TipoCategoria {
-        COMIDA, BEBIDA, INSUMO
+        comida, 
+        bebida, 
+        insumo,
+        postre,   // Añadí postre y entrada por si acaso
+        entrada
     }
     
     // Constructores

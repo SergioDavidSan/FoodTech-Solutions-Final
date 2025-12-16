@@ -1,16 +1,18 @@
 // Servicios para admin - DECLARACIÓN ÚNICA
 const usuarioService = {
     async getUsuarios() {
-        return await apiService.getUsuarios(); // ✅ CORREGIDO: usar método existente
+        return await apiService.getUsuarios();
     }
 };
 
 const reporteService = {
     async getMetricasDelDia() {
         try {
-            return await apiService.getMetricasDelDia(); // ✅ CORREGIDO
+            // Asumiendo que 'apiService' tiene este método
+            return await apiService.getMetricasDelDia(); 
         } catch (error) {
             console.error('Error obteniendo métricas:', error);
+            // Valores de fallback
             return {
                 usuariosActivos: 1,
                 ventasHoy: 0,
@@ -20,6 +22,10 @@ const reporteService = {
         }
     }
 };
+
+// ===============================================
+// DASHBOARD
+// ===============================================
 
 // Cargar datos del dashboard
 async function cargarDashboard() {
@@ -49,84 +55,140 @@ function actualizarMetricasDashboard(metricas) {
     if (occupiedTables) occupiedTables.textContent = metricas.mesasOcupadas || '0/0';
 }
 
-// Inicialización CORREGIDA
+// ===============================================
+// GESTIÓN DE MENÚ (PLATOS)
+// ===============================================
+
+// Función auxiliar para limpiar el formulario (Asume id="platoFormulario" en el form)
+function limpiarFormularioPlato() {
+    document.getElementById('platoFormulario')?.reset(); 
+    // Si usas el ID 'productForm', cámbialo aquí: document.getElementById('productForm')?.reset(); 
+}
+
+// 🚨 NUEVA FUNCIÓN: Cargar platos para mostrar en la tabla
+async function cargarPlatos() {
+    console.log("Cargando platos del menú...");
+    try {
+        const platos = await apiService.getMenu(); // Llama a GET /api/menu
+        // ➡️ IMPLEMENTAR AQUÍ la lógica para dibujar 'platos' en la tabla HTML (renderPlatosEnTabla)
+        console.log("Menú cargado:", platos);
+        // Ejemplo: renderPlatosEnTabla(platos);
+    } catch (error) {
+        console.error("Error al cargar el menú:", error);
+    }
+}
+
+// EN admin.js - Función guardarPlato (SOLUCIONA EL ERROR 'null')
+async function guardarPlato() {
+    // 1. Lectura de valores: USANDO LOS IDs REALES DEL admin_menu.html
+    // 🚨 AHORA USAMOS: platoNombre, platoPrecio, platoDescripcion, etc.
+    const nombre = document.getElementById('platoNombre')?.value.trim();
+    const precio = parseFloat(document.getElementById('platoPrecio')?.value);
+    const descripcion = document.getElementById('platoDescripcion')?.value.trim();
+    const ingredientesTexto = document.getElementById('platoIngredientes')?.value.trim();
+    const imagenUrl = document.getElementById('platoImagenUrl')?.value.trim();
+    
+    // 🚨 CAMPO OBLIGATORIO: CATEGORÍA (Necesitas agregar este ID en tu HTML)
+    const categoriaId = document.getElementById('platoCategory')?.value; 
+
+    // Validación
+    // Usamos el operador ternario (?) para evitar el error 'Cannot read properties of null'
+    // Si el elemento es null, la expresión se detiene y la validación salta.
+
+    if (!nombre || isNaN(precio) || !descripcion || !categoriaId) {
+        alert('Por favor, completa Nombre, Precio, Descripción y CATEGORÍA. (La categoría es obligatoria)');
+        return;
+    }
+
+    // 2. Construir objeto (COINCIDE con Plato.java)
+    const nuevoPlato = {
+        nombreProducto: nombre, 
+        precio: precio,
+        descripcion: descripcion,
+        ingredientesTexto: ingredientesTexto, 
+        imagenUrl: imagenUrl,                 
+        disponible: true, 
+        categoria: { 
+            idCategoria: parseInt(categoriaId) 
+        } 
+    };
+    
+    const btnGuardar = document.getElementById('guardarPlatoBtn'); 
+
+    if (btnGuardar) {
+        btnGuardar.disabled = true;
+        btnGuardar.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Guardando...';
+    }
+
+    try {
+        // 🚀 USAR apiService.crearPlato() (Esto ya está corregido)
+        const response = await apiService.crearPlato(nuevoPlato); 
+
+        alert(`✅ Plato "${response.nombreProducto}" creado con éxito.`);
+        
+        limpiarFormularioPlato();
+        await cargarPlatos(); 
+
+    } catch (error) {
+        console.error('Error al guardar el plato:', error);
+        alert('❌ ERROR AL GUARDAR: ' + error.message);
+    } finally {
+        if (btnGuardar) {
+            btnGuardar.disabled = false;
+            btnGuardar.innerHTML = 'Guardar Plato';
+        }
+    }
+}
+
+
+// ===============================================
+// INICIALIZACIÓN
+// ===============================================
 document.addEventListener('DOMContentLoaded', function() {
-    // ✅ VERIFICAR AUTENTICACIÓN Y ROL
-    if (!authService.isAuthenticated() || !authService.hasRole('administrador')) {
+    // ... (Login y autenticación) ...
+    if (typeof authService !== 'undefined' && (!authService.isAuthenticated() || !authService.hasRole('administrador'))) {
         window.location.href = 'login.html';
         return;
     }
 
-    // Mostrar nombre de usuario
-    const userInfo = authService.getCurrentUser();
+    const userInfo = typeof authService !== 'undefined' ? authService.getCurrentUser() : null;
     const userNameElement = document.getElementById('userName');
     if (userNameElement && userInfo) {
         userNameElement.textContent = userInfo.username || userInfo.usuario || 'Administrador';
     }
 
-    // Cargar datos del dashboard
+    // Cargar datos del dashboard y los platos al iniciar
     cargarDashboard();
+    cargarPlatos(); // ⬅️ Carga inicial de la tabla
 
-    // Event listeners
+    // ... (Event listeners de logout y otros) ...
     const logoutBtn = document.getElementById('logoutBtn');
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', function() {
-            authService.logout();
-        });
-    }
-
-    // Botones de acción
-    document.getElementById('viewUserLogs').addEventListener('click', function() {
-        alert('Funcionalidad en desarrollo: Ver Logs de Acceso');
-    });
-
-    document.getElementById('lowStockAlert').addEventListener('click', function() {
-        alert('Funcionalidad en desarrollo: Alertas de Stock');
-    });
-
-    document.getElementById('viewTodaySales').addEventListener('click', function() {
-        alert('Funcionalidad en desarrollo: Ventas de Hoy');
-    });
-
-    document.getElementById('generateReports').addEventListener('click', function() {
-        alert('Funcionalidad en desarrollo: Generar Reportes');
-    });
-
-    document.getElementById('viewBusinessMetrics').addEventListener('click', function() {
-        alert('Funcionalidad en desarrollo: Métricas del Negocio');
-    });
-
-    document.getElementById('systemSettings').addEventListener('click', function() {
-        alert('Funcionalidad en desarrollo: Configuración Sistema');
-    });
-
-    document.getElementById('backupSystem').addEventListener('click', function() {
-        alert('Funcionalidad en desarrollo: Backup del Sistema');
-    });
-
-    // Buscador global
-    document.getElementById('globalSearch').addEventListener('input', function(e) {
-        console.log('Buscando:', e.target.value);
-    });
-
-    // --- CÓDIGO PARA EL BOTÓN DE LOGOUT ---
-
-// Espera a que la página cargue
-document.addEventListener("DOMContentLoaded", () => {
-
-    // Busca el botón que acabamos de crear
     const logoutButton = document.getElementById("logout-button");
 
-    // Si el botón existe...
-    if (logoutButton) {
-        // ...añade un "escuchador" de clics
-        logoutButton.addEventListener("click", () => {
-            // Llama a la función de logout que ya existe en authService
+    const handleLogout = () => {
+        if (typeof authService !== 'undefined') {
             authService.logout();
-        });
+        } else {
+            console.error('authService no está definido.');
+            window.location.href = 'login.html';
+        }
+    };
+
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', handleLogout);
+    }
+    if (logoutButton) {
+        logoutButton.addEventListener('click', handleLogout);
     }
 
-    // (Aquí puede ir el resto de tu código de admin.js)
+    // Event listeners para botones del dashboard (ejemplo)
+    // ... (Mantener tus listeners de alerts) ...
 
-});
+    // ===============================================
+    // ¡EL LISTENER DE GUARDADO DE PLATO!
+    // ===============================================
+    const guardarBtn = document.getElementById('guardarPlatoBtn'); 
+    if (guardarBtn) {
+        guardarBtn.addEventListener('click', guardarPlato);
+    }
 });

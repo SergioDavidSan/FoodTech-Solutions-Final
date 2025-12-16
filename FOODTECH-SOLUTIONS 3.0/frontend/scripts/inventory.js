@@ -1,297 +1,226 @@
-// ✅ VERIFICACIÓN DE AUTENTICACIÓN MEJORADA - UNA SOLA VEZ
-const rol = localStorage.getItem('rol');
-if (!authService.isAuthenticated() || !['administrador', 'gerente'].includes(rol)) {
-    authService.logout();
-    window.location.href = '../login.html';
-}
+// ============================================================
+//  CONFIGURACIÓN Y ESTADO
+// ============================================================
+const LOGIN_PAGE = "../../modules/login.html";
+let productosInventario = [];
 
-// ✅ SERVICIO DE PRODUCTOS (si no existe)
-const productoService = {
-    async getProductos() {
-        try {
-            return await apiService.getProductos();
-        } catch (error) {
-            console.error('Error obteniendo productos:', error);
-            return [];
-        }
-    },
+// ============================================================
+//  INICIALIZACIÓN
+// ============================================================
+document.addEventListener("DOMContentLoaded", () => {
+    console.log("📦 Iniciando Módulo de Inventario (MODO REAL)...");
 
-    async crearProducto(productoData) {
-        return await apiService.request('/productos', {
-            method: 'POST',
-            body: productoData
-        });
-    },
-
-    async actualizarProducto(id, productoData) {
-        return await apiService.request(`/productos/${id}`, {
-            method: 'PUT',
-            body: productoData
-        });
-    },
-
-    async eliminarProducto(id) {
-        return await apiService.request(`/productos/${id}`, {
-            method: 'DELETE'
-        });
-    },
-
-    async validarProducto(productoData) {
-        const errors = [];
-        
-        if (!productoData.nombreProducto || productoData.nombreProducto.trim().length < 2) {
-            errors.push('El nombre debe tener al menos 2 caracteres');
-        }
-        
-        if (!productoData.precio || productoData.precio <= 0) {
-            errors.push('El precio debe ser mayor a 0');
-        }
-        
-        if (productoData.stock < 0) {
-            errors.push('El stock no puede ser negativo');
-        }
-        
-        if (productoData.stockMinimo < 0) {
-            errors.push('El stock mínimo no puede ser negativo');
-        }
-        
-        return {
-            isValid: errors.length === 0,
-            errors: errors
-        };
+    // 1. Seguridad
+    if (typeof authService === 'undefined') {
+        window.location.href = LOGIN_PAGE;
+        return;
     }
-};
+    if (!authService.isAuthenticated()) {
+        authService.logout();
+        return;
+    }
 
-// ✅ INICIALIZACIÓN PRINCIPAL - UNA SOLA VEZ
-document.addEventListener('DOMContentLoaded', function() {
-    // Cargar datos del usuario
+    // 2. Info Usuario
     const userInfo = authService.getCurrentUser();
-    const userInfoElement = document.querySelector('.user-info');
-    if (userInfoElement && userInfo) {
-        const rolDisplay = rol === 'administrador' ? 'Administrador' : 'Gerente';
-        userInfoElement.textContent = `👤 ${userInfo.username || userInfo.usuario || 'Usuario'}, ${rolDisplay}`;
-    }
+    const userSpan = document.getElementById('userName');
+    if(userSpan) userSpan.textContent = userInfo?.username || 'Gerente';
     
-    // Configurar event listeners
-    const productForm = document.getElementById('productForm');
-    if (productForm) {
-        productForm.addEventListener('submit', function(e) {
+    document.getElementById("logout-button")?.addEventListener("click", () => authService.logout());
+
+    // 3. Configurar Botones
+    const btnAdd = document.getElementById('addProductBtn');
+    const btnReset = document.getElementById('btnResetForm');
+    const btnCancel = document.getElementById('cancelForm');
+    const form = document.getElementById('productForm');
+
+    if (btnAdd) btnAdd.addEventListener('click', () => limpiarYMostrarFormulario());
+    if (btnReset) btnReset.addEventListener('click', () => limpiarFormulario());
+    if (btnCancel) btnCancel.addEventListener('click', () => limpiarFormulario());
+
+    // 4. Evento Submit
+    if (form) {
+        form.addEventListener('submit', async (e) => {
             e.preventDefault();
-            guardarProducto();
+            await guardarProducto();
         });
     }
-    
-    // Configurar logout
-    const logoutBtn = document.getElementById('logoutBtn');
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', function() {
-            authService.logout();
-            window.location.href = '../login.html';
-        });
-    }
-    
-    // Cargar inventario inicial
-    cargarInventarioInicial();
-    
-    // Configurar event delegation para botones dinámicos
-    document.addEventListener('click', function(e) {
-        if (e.target.classList.contains('btn-edit')) {
-            editarProducto(e.target.dataset.id);
-        }
-        if (e.target.classList.contains('btn-delete')) {
-            eliminarProducto(e.target.dataset.id);
-        }
-    });
+
+    // 5. Cargar datos REALES de la base de datos
+    cargarInventario();
 });
 
-// ✅ CARGAR INVENTARIO DESDE BACKEND
-async function cargarInventarioInicial() {
+// ============================================================
+//  LÓGICA DE NEGOCIO
+// ============================================================
+
+async function cargarInventario() {
+    const tbody = document.getElementById('inventoryTableBody');
+    if(tbody) tbody.innerHTML = '<tr><td colspan="7" class="text-center">Cargando datos de la BD...</td></tr>';
+
     try {
-        console.log('🔄 Cargando inventario...');
-        const productos = await productoService.getProductos();
-        actualizarTablaInventario(productos);
+        const productos = await apiService.getInventario(); 
+        
+        if (!productos || productos.length === 0) {
+             productosInventario = [];
+             renderizarTabla([]);
+             actualizarMetricas([]);
+             // Corrección visual segura
+             const emptyState = document.getElementById('emptyInventory');
+             const table = document.querySelector('.inventory-table');
+             
+             if (emptyState) emptyState.style.display = 'flex';
+             if (table) table.style.display = 'none';
+             return;
+        }
+
+        const emptyState = document.getElementById('emptyInventory');
+        const table = document.querySelector('.inventory-table');
+        if (emptyState) emptyState.style.display = 'none';
+        if (table) table.style.display = 'table';
+
+        productosInventario = productos;
+        renderizarTabla(productos);
+        actualizarMetricas(productos);
+        console.log("✅ Inventario cargado desde BD:", productos);
+
     } catch (error) {
-        console.error('Error cargando inventario:', error);
-        // Mostrar datos de ejemplo si hay error
-        mostrarInventarioEjemplo();
+        console.error("Error cargando inventario:", error);
+        if(tbody) tbody.innerHTML = `<tr><td colspan="7" class="text-center text-danger">Error de conexión: ${error.message}</td></tr>`;
     }
 }
 
-// ✅ ACTUALIZAR TABLA DE INVENTARIO
-function actualizarTablaInventario(productos) {
-    const tbody = document.querySelector('.inventory-table tbody');
+async function guardarProducto() {
+    // 1. Leer valores del DOM directamente
+    const nombre = document.getElementById('productName').value.trim();
+    const categoriaValor = document.getElementById('productCategory').value;
+    const precio = parseFloat(document.getElementById('productPrice').value);
+    const stock = parseInt(document.getElementById('productStock').value);
+    const minimo = parseInt(document.getElementById('minStock').value);
+    const proveedor = document.getElementById('productSupplier').value.trim();
+    
+    // ⬇️ ¡NUEVO CAMPO! Necesitas un campo de entrada con id="productUnit" en tu HTML
+    const unidadMedida = document.getElementById('productUnit').value.trim(); 
+    // ⬆️ ¡NUEVO CAMPO!
+
+    // 2. Validación
+    if (nombre.length < 2) return alert("El nombre es muy corto");
+    if (isNaN(precio) || precio <= 0) return alert("Precio inválido");
+    if (isNaN(stock) || stock < 0) return alert("Stock inválido");
+    if (!categoriaValor) return alert("Selecciona una categoría");
+    if (!unidadMedida) return alert("La unidad de medida es obligatoria"); // ⬅️ NUEVA VALIDACIÓN
+
+    // 3. Construir objeto
+    const nuevoProducto = {
+        nombreProducto: nombre,
+        precio: precio,
+        // stockActual: stock, // ❌ Esto está mal. Debe ser 'cantidad'.
+        cantidad: stock,      // ✅ CORRECCIÓN APLICADA
+        stockMinimo: minimo,
+        proveedor: proveedor,
+        disponible: true,
+        unidadMedida: unidadMedida, // ✅ CAMPO AGREGADO
+        categoria: { idCategoria: parseInt(categoriaValor) }
+    };
+
+    console.log("Enviando al backend:", nuevoProducto);
+
+    // 4. ENVIAR
+    const btnSave = document.getElementById('saveProduct');
+    // Aseguramos que el botón exista antes de modificarlo
+    if (btnSave) {
+        btnSave.disabled = true;
+        btnSave.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Guardando...';
+    }
+
+    try {
+        const respuesta = await apiService.crearProducto(nuevoProducto);
+        
+        console.log("Respuesta del server:", respuesta);
+        alert("✅ Producto guardado en la Base de Datos");
+        
+        limpiarFormulario();
+        await cargarInventario(); 
+
+    } catch (error) {
+        console.error("Error al guardar:", error);
+        alert("❌ Error al guardar: " + error.message);
+    } finally {
+        if (btnSave) {
+            btnSave.disabled = false;
+            btnSave.innerHTML = '<i class="fa-solid fa-save"></i> Guardar Producto';
+        }
+    }
+}
+
+// ============================================================
+//  UI & UTILIDADES
+// ============================================================
+
+function renderizarTabla(productos) {
+    const tbody = document.getElementById('inventoryTableBody');
     if (!tbody) return;
 
-    if (productos.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" class="no-data">No hay productos en el inventario</td></tr>';
+    if(productos.length === 0) {
+        tbody.innerHTML = '';
         return;
     }
 
-    tbody.innerHTML = productos.map(producto => `
-        <tr data-product-id="${producto.idProducto}">
-            <td>${producto.nombreProducto || 'N/A'}</td>
-            <td>${producto.categoria?.nombreCategoria || producto.idCategoria || 'N/A'}</td>
-            <td class="${producto.stock <= (producto.stockMinimo || 5) ? 'low-stock' : ''}">
-                ${producto.stock || 0}
-            </td>
-            <td>${producto.stockMinimo || 5}</td>
-            <td>${producto.proveedor || 'N/A'}</td>
-            <td>
-                <button class="btn-edit" data-id="${producto.idProducto}">Editar</button>
-                <button class="btn-delete" data-id="${producto.idProducto}">Eliminar</button>
-            </td>
-        </tr>
-    `).join('');
+    tbody.innerHTML = productos.map(p => {
+        let estadoClass = 'ok';
+        let estadoTexto = 'OK';
+        const stock = p.stockActual || 0;
+        const min = p.stockMinimo || 0;
+
+        if (stock === 0) { estadoClass = 'out'; estadoTexto = 'Agotado'; }
+        else if (stock <= min) { estadoClass = 'low'; estadoTexto = 'Bajo'; }
+
+        const catNombre = p.categoria ? (p.categoria.nombreCategoria || 'General') : 'General';
+
+        return `
+            <tr>
+                <td>${p.nombreProducto}</td>
+                <td>${catNombre}</td>
+                <td>${stock}</td>
+                <td>${min}</td>
+                <td>$${(p.precio || 0).toLocaleString()}</td>
+                <td><span class="status-badge ${estadoClass}">${estadoTexto}</span></td>
+                <td class="text-center">
+                    <button class="action-btn delete" onclick="borrarProducto(${p.idProducto})"><i class="fa-solid fa-trash"></i></button>
+                </td>
+            </tr>
+        `;
+    }).join('');
 }
 
-// ✅ MOSTRAR INVENTARIO DE EJEMPLO (fallback)
-function mostrarInventarioEjemplo() {
-    const inventarioEjemplo = [
-        { 
-            idProducto: 1, 
-            nombreProducto: 'Tomate Chonto', 
-            categoria: { nombreCategoria: 'Verduras' }, 
-            stock: 25, 
-            stockMinimo: 5, 
-            proveedor: 'Proveedor A' 
-        },
-        { 
-            idProducto: 2, 
-            nombreProducto: 'Carne de Res Molida', 
-            categoria: { nombreCategoria: 'Cárnicos' }, 
-            stock: 15, 
-            stockMinimo: 3, 
-            proveedor: 'Proveedor B' 
-        },
-        { 
-            idProducto: 3, 
-            nombreProducto: 'Queso Mozzarella', 
-            categoria: { nombreCategoria: 'Lácteos' }, 
-            stock: 10, 
-            stockMinimo: 2, 
-            proveedor: 'Proveedor A' 
+async function borrarProducto(id) {
+    if(confirm("¿Eliminar este producto de la base de datos?")) {
+        try {
+            await apiService.eliminarProducto(id);
+            alert("🗑️ Producto eliminado");
+            cargarInventario();
+        } catch (error) {
+            alert("Error al eliminar: " + error.message);
         }
-    ];
-    
-    actualizarTablaInventario(inventarioEjemplo);
-    console.log('📋 Mostrando inventario de ejemplo');
+    }
 }
 
-// ✅ GUARDAR NUEVO PRODUCTO
-async function guardarProducto() {
+function actualizarMetricas(productos) {
+    const total = productos.length;
+    const bajos = productos.filter(p => (p.stockActual || 0) <= (p.stockMinimo || 0) && (p.stockActual || 0) > 0).length;
+    const agotados = productos.filter(p => (p.stockActual || 0) === 0).length;
+
+    document.getElementById('totalProducts').textContent = total;
+    document.getElementById('lowStockCount').textContent = bajos;
+    document.getElementById('outOfStockCount').textContent = agotados;
+}
+
+function limpiarYMostrarFormulario() {
+    limpiarFormulario();
+    document.getElementById('productName').focus();
+}
+
+function limpiarFormulario() {
     const form = document.getElementById('productForm');
-    if (!form) {
-        mostrarError('No se encontró el formulario');
-        return;
-    }
-
-    const formData = new FormData(form);
-    
-    const productoData = {
-        nombreProducto: formData.get('productName')?.trim(),
-        descripcion: formData.get('productDescription')?.trim(),
-        precio: parseFloat(formData.get('productPrice')) || 0,
-        idCategoria: parseInt(formData.get('productCategory')) || 1,
-        stock: parseInt(formData.get('productStock')) || 0,
-        stockMinimo: parseInt(formData.get('minStock')) || 5,
-        proveedor: formData.get('productSupplier')?.trim(),
-        disponible: formData.get('productAvailable') === 'on'
-    };
-    
-    try {
-        // Validar producto
-        const validacion = await productoService.validarProducto(productoData);
-        if (!validacion.isValid) {
-            mostrarError('Errores en el formulario: ' + validacion.errors.join(', '));
-            return;
-        }
-        
-        // Guardar en backend
-        const resultado = await productoService.crearProducto(productoData);
-        mostrarExito('✅ Producto agregado exitosamente al inventario!');
-        form.reset();
-        
-        // Recargar inventario
-        await cargarInventarioInicial();
-        
-    } catch (error) {
-        console.error('Error guardando producto:', error);
-        mostrarError('❌ Error al guardar el producto: ' + error.message);
-    }
-}
-
-// ✅ EDITAR PRODUCTO
-async function editarProducto(productoId) {
-    if (!productoId) {
-        mostrarError('ID de producto no válido');
-        return;
-    }
-
-    try {
-        // Obtener datos actuales del producto
-        const productos = await productoService.getProductos();
-        const producto = productos.find(p => p.idProducto == productoId);
-        
-        if (!producto) {
-            mostrarError('Producto no encontrado');
-            return;
-        }
-        
-        // En un sistema real, aquí abrirías un modal de edición
-        const nuevoStock = prompt(`Editar stock para "${producto.nombreProducto}":`, producto.stock);
-        
-        if (nuevoStock !== null && nuevoStock !== producto.stock.toString()) {
-            const stockNum = parseInt(nuevoStock);
-            if (isNaN(stockNum) || stockNum < 0) {
-                mostrarError('El stock debe ser un número positivo');
-                return;
-            }
-            
-            await productoService.actualizarProducto(productoId, {
-                ...producto,
-                stock: stockNum
-            });
-            
-            mostrarExito('✅ Stock actualizado exitosamente!');
-            await cargarInventarioInicial();
-        }
-        
-    } catch (error) {
-        console.error('Error editando producto:', error);
-        mostrarError('❌ Error al editar el producto');
-    }
-}
-
-// ✅ ELIMINAR PRODUCTO
-async function eliminarProducto(productoId) {
-    if (!productoId) {
-        mostrarError('ID de producto no válido');
-        return;
-    }
-
-    if (!confirm('¿Estás seguro de que quieres eliminar este producto?')) {
-        return;
-    }
-
-    try {
-        await productoService.eliminarProducto(productoId);
-        mostrarExito('✅ Producto eliminado exitosamente!');
-        await cargarInventarioInicial();
-        
-    } catch (error) {
-        console.error('Error eliminando producto:', error);
-        mostrarError('❌ Error al eliminar el producto');
-    }
-}
-
-// ✅ FUNCIONES DE UTILIDAD
-function mostrarError(mensaje) {
-    console.error(mensaje);
-    // Puedes implementar un sistema de notificaciones más elegante
-    alert(mensaje);
-}
-
-function mostrarExito(mensaje) {
-    console.log(mensaje);
-    alert(mensaje);
+    if (form) form.reset();
+    document.getElementById('productId').value = '';
 }
